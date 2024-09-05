@@ -13,7 +13,7 @@ import {
   ledgerWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 import {
-  baseSepolia,
+  zksyncSepoliaTestnet,
 } from "wagmi/chains";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -32,11 +32,11 @@ const config = getDefaultConfig({
     },
   ],
   chains: [
-    baseSepolia
+    zksyncSepoliaTestnet
   ],
   ssr: true,
   transports: {
-    [baseSepolia.id]: http(),
+    [zksyncSepoliaTestnet.id]: http(),
   },
 });
 

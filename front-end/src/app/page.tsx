@@ -8,7 +8,7 @@ import {
   getContract,
   http,
 } from "viem";
-import { baseSepolia } from "viem/chains";
+import {  zksyncSepoliaTestnet } from "viem/chains";
 import { useAccount, useWriteContract } from "wagmi";
 
 import { contractABI } from "../../abi";
@@ -57,7 +57,7 @@ export default function Home() {
   const [userInfo, setUserInfo] = useState<any>(null);
 
   const client = createPublicClient({
-    chain: baseSepolia,
+    chain: zksyncSepoliaTestnet,
     transport: http(
       process.env.NEXT_PUBLIC_ALCHEMY_TRANSPORT_URL
     ),
@@ -66,14 +66,19 @@ export default function Home() {
   const [walletClient, setWalletClient] = useState<any>(null);
 
   useEffect(() => {
-    const client = createWalletClient({
-      chain: baseSepolia,
-      transport: custom(window.ethereum!),
-    });
-    setWalletClient(client);
-    initializeContract();
-    getnftCollectionAddresses();
+    if (typeof window !== 'undefined' && window.ethereum) {
+      const client = createWalletClient({
+        chain: zksyncSepoliaTestnet,
+        transport: custom(window.ethereum),
+      });
+      setWalletClient(client);
+      initializeContract();
+      getnftCollectionAddresses();
+    } else {
+      console.error("Ethereum provider is not available.");
+    }
   }, []);
+  
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -139,8 +144,8 @@ export default function Home() {
         "function isApprovedForAll(address owner, address operator) view returns (bool)",
       ];
       console.log("hello this is rn debuggin after the abi");
-      const Pprovider = await new ethers.BrowserProvider(window.ethereum);
-      const signer = await Pprovider.getSigner();
+      const Pprovider = await new ethers.BrowserProvider(window?.ethereum);
+      const signer = await Pprovider?.getSigner();
       // Iterate over each collection address
       for (const [collectionAddress, tokenIds] of Object.entries(collections)) {
         console.log(`Processing collection: ${collectionAddress}`);
@@ -534,7 +539,7 @@ export default function Home() {
           Available to UnStake
         </h2>
         <button
-          className="absolute bottom-[33%]  left-1/2 transform -translate-x-1/2 bg-transparent border-2 border-white rounded-full w-[75%] xl:w-[120vh] py-2 text-xl font-medium text-white hover:bg-white hover:text-black md:items-center md:justify-center transition duration-300 text-start px-4 md:px-[30px]"
+          className="absolute bottom-[20%] sm:bottom-[33%]  left-1/2 transform -translate-x-1/2 bg-transparent border-2 border-white rounded-full w-[75%] xl:w-[120vh] py-2 text-xl font-medium text-white hover:bg-white hover:text-black md:items-center md:justify-center transition duration-300 text-start px-4 md:px-[30px]"
           onClick={() => {
             toggleModal2();
             getAvailableToUnstakeNfts();
@@ -584,7 +589,7 @@ export default function Home() {
           ADD Your Own NFT Collection
         </h2>
         <button
-          className="absolute bottom-[10%] md:bottom-[30%] left-1/2 transform -translate-x-1/2 bg-transparent border-2 border-white rounded-full w-[75%] xl:w-[120vh] py-2 text-xl font-medium text-white hover:bg-white hover:text-black md:items-center md:justify-center transition duration-300 text-start px-4 md:px-[30px]"
+          className="absolute bottom-[10%] md:bottom-[30%] left-1/2 transform -translate-x-1/2 bg-transparent border-2 border-white rounded-full w-[75%] xl:w-[120vh] py-2 font-[12px] sm:font-medium text-white hover:bg-white hover:text-black md:items-center md:justify-center transition duration-300 text-start px-4 md:px-[30px]"
           onClick={toggleModal3}
         >
           Bring your NFTs Collection in INKWORLD....

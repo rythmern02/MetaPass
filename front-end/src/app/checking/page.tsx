@@ -1,4 +1,5 @@
-import React from "react";
+"use client"
+import React, { useState } from "react";
 import { ethers } from "ethers";
 
 // Define the NFT and collection types
@@ -28,14 +29,14 @@ interface NFTCollectionsProps {
   setCollections: React.Dispatch<React.SetStateAction<NFTCollection[]>>;
 }
 
-const NFTCollections: React.FC<NFTCollectionsProps> = ({
+const NFTCollections: React.FC<any> = ({
   collections,
   setCollections,
   potentialNftAddresses,
   selectedNfts,
   setSelectedNfts,
 }) => {
-  const [error, setError] = React.useState<string | null>(null);
+  const [error, setError] = useState<any>(null);
 
   const nftABI = [
     "function balanceOf(address owner) view returns (uint256)",
@@ -45,13 +46,14 @@ const NFTCollections: React.FC<NFTCollectionsProps> = ({
 
   const connectWallet = async () => {
     try {
-      if (typeof window.ethereum !== "undefined") {
-        await window.ethereum.request({ method: "eth_requestAccounts" });
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = provider.getSigner();
+      if (typeof window?.ethereum !== "undefined") {
+        await window?.ethereum?.request({ method: "eth_requestAccounts" });
+        const provider = new ethers.BrowserProvider(window?.ethereum);
+        const signer = provider?.getSigner();
         return signer;
       } else {
         setError("Please install MetaMask!");
+        alert("wallet not detected");
         return null;
       }
     } catch (err) {
@@ -112,7 +114,7 @@ const NFTCollections: React.FC<NFTCollectionsProps> = ({
     }
 
     // Avoid duplicating collections
-    setCollections((prevCollections) => {
+    setCollections((prevCollections: any) => {
       const mergedCollections = [...prevCollections];
 
       newCollections.forEach((newCollection) => {
@@ -134,16 +136,16 @@ const NFTCollections: React.FC<NFTCollectionsProps> = ({
   }, []); // Empty dependency array ensures this runs only once when the component mounts
 
   const handleSelectNFT = (nft: SelectedNFT) => {
-    setSelectedNfts((prevSelectedNfts) => {
+    setSelectedNfts((prevSelectedNfts: any) => {
       const alreadySelected = prevSelectedNfts.find(
-        (selectedNft) =>
+        (selectedNft: any) =>
           selectedNft.tokenId === nft.tokenId &&
           selectedNft.contractAddress === nft.contractAddress
       );
 
       if (alreadySelected) {
         return prevSelectedNfts.filter(
-          (selectedNft) =>
+          (selectedNft: any) =>
             selectedNft.tokenId !== nft.tokenId ||
             selectedNft.contractAddress !== nft.contractAddress
         );
@@ -156,16 +158,16 @@ const NFTCollections: React.FC<NFTCollectionsProps> = ({
   return (
     <div>
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {collections.length > 0 ? (
-        collections.map((collection) => (
+      {collections?.length > 0 ? (
+        collections.map((collection: any) => (
           <div key={collection.contractAddress} className="mb-8">
             <h3 className="text-xl font-bold mb-4 text-gray-200">
               Collection Address: {collection.contractAddress}
             </h3>
             <div className="grid grid-cols sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {collection.nfts.map((nft) => (
+              {collection.nfts.map((nft: any) => (
                 <button
-                  key={nft.tokenId}
+                  key={nft?.tokenId}
                   onClick={() =>
                     handleSelectNFT({
                       tokenId: nft.tokenId,
@@ -174,7 +176,7 @@ const NFTCollections: React.FC<NFTCollectionsProps> = ({
                   }
                   className={`border rounded-lg p-2 transition-transform transform hover:scale-105 ${
                     selectedNfts.find(
-                      (selectedNft) =>
+                      (selectedNft : any) =>
                         selectedNft.tokenId === nft.tokenId &&
                         selectedNft.contractAddress === collection.contractAddress
                     )

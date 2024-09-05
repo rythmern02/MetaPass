@@ -1,4 +1,5 @@
-import React from "react";
+"use client"
+import React, { useState } from "react";
 import { ethers } from "ethers";
 
 // Define the NFT and collection types
@@ -32,22 +33,22 @@ interface UnstakeNftCollectionsProps {
   };
 }
 
-const UnstakeNftCollections: React.FC<UnstakeNftCollectionsProps> = ({
+const UnstakeNftCollections: React.FC<any> = ({
   nftData,
   selectedUnStakeNfts,
   setSelectedUnStakeNfts,
 }) => {
-  const [collections, setCollections] = React.useState<NFTCollection[]>([]);
-  const [error, setError] = React.useState<string | null>(null);
+  const [collections, setCollections] = useState<NFTCollection[]>([]);
+  const [error, setError] = useState<any>(null);
 
   const nftABI = ["function tokenURI(uint256 tokenId) view returns (string)"];
 
   const connectWallet = async () => {
     try {
-      if (typeof window.ethereum !== "undefined") {
-        await window.ethereum.request({ method: "eth_requestAccounts" });
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = provider.getSigner();
+      if (typeof window?.ethereum !== "undefined") {
+        await window?.ethereum?.request({ method: "eth_requestAccounts" });
+        const provider = new ethers.BrowserProvider(window?.ethereum);
+        const signer = provider?.getSigner();
         return signer;
       } else {
         setError("Please install MetaMask!");
@@ -134,16 +135,16 @@ const UnstakeNftCollections: React.FC<UnstakeNftCollectionsProps> = ({
   }, [nftData]); // Depend on nftData to refetch when it changes
 
   const handleSelectNFT = (nft: SelectedNFT) => {
-    setSelectedUnStakeNfts((prevSelectedNfts) => {
+    setSelectedUnStakeNfts((prevSelectedNfts: any) => {
       const alreadySelected = prevSelectedNfts.find(
-        (selectedNft) =>
+        (selectedNft: any) =>
           selectedNft.tokenId === nft.tokenId &&
           selectedNft.contractAddress === nft.contractAddress
       );
 
       if (alreadySelected) {
         return prevSelectedNfts.filter(
-          (selectedNft) =>
+          (selectedNft:any) =>
             selectedNft.tokenId !== nft.tokenId ||
             selectedNft.contractAddress !== nft.contractAddress
         );
@@ -156,8 +157,8 @@ const UnstakeNftCollections: React.FC<UnstakeNftCollectionsProps> = ({
   return (
     <div>
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {collections.length > 0 ? (
-        collections.map((collection) => (
+      {collections?.length > 0 ? (
+        collections?.map((collection) => (
           <div key={collection.contractAddress} className="mb-8">
             <h3 className="text-xl font-bold mb-4 text-gray-200">
               Collection Address: {collection.contractAddress}
@@ -174,7 +175,7 @@ const UnstakeNftCollections: React.FC<UnstakeNftCollectionsProps> = ({
                   }
                   className={`border rounded-lg p-2 transition-transform transform hover:scale-105 ${
                     selectedUnStakeNfts.find(
-                      (selectedNft) =>
+                      (selectedNft: any) =>
                         selectedNft.tokenId === nft.tokenId &&
                         selectedNft.contractAddress ===
                           collection.contractAddress
