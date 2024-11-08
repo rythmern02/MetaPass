@@ -8,12 +8,12 @@ import {
   getContract,
   http,
 } from "viem";
-import {  zksyncSepoliaTestnet } from "viem/chains";
+import { zksyncSepoliaTestnet } from "viem/chains";
 import { useAccount, useWriteContract } from "wagmi";
 
 import { contractABI } from "../../abi";
-import NFTCollections from "./checking/page";
-import UnstakeNftCollections from "./unstake/page";
+import NFTCollections from "./components/stakeNfts/page";
+import UnstakeNftCollections from "./components/unstakeNfts/page";
 import { ethers } from "ethers";
 
 interface Nfts {
@@ -58,15 +58,13 @@ export default function Home() {
 
   const client = createPublicClient({
     chain: zksyncSepoliaTestnet,
-    transport: http(
-      process.env.NEXT_PUBLIC_ALCHEMY_TRANSPORT_URL
-    ),
+    transport: http(process.env.NEXT_PUBLIC_ALCHEMY_TRANSPORT_URL),
   });
 
   const [walletClient, setWalletClient] = useState<any>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.ethereum) {
+    if (typeof window !== "undefined" && window.ethereum) {
       const client = createWalletClient({
         chain: zksyncSepoliaTestnet,
         transport: custom(window.ethereum),
@@ -78,7 +76,6 @@ export default function Home() {
       console.error("Ethereum provider is not available.");
     }
   }, []);
-  
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -221,17 +218,21 @@ export default function Home() {
   };
 
   const claimPoints = async () => {
-    try {
-      const { request } = await walletClient.writeContract({
-        address: StakingContractAddress,
-        abi: contractABI,
-        functionName: "claimPoints",
-        args: [],
-        account: accountAddress,
-      });
-      return await request;
-    } catch (error) {
-      alert(`Transaction failed due to this error: ${error}`);
+    if (Number(userInfo[0]) == 0) {
+      alert("You haven't earned any Rewards yet to Claim");
+    } else {
+      try {
+        const { request } = await walletClient.writeContract({
+          address: StakingContractAddress,
+          abi: contractABI,
+          functionName: "claimPoints",
+          args: [],
+          account: accountAddress,
+        });
+        return await request;
+      } catch (error) {
+        alert(`Transaction failed due to this error: ${error}`);
+      }
     }
   };
 
@@ -290,17 +291,22 @@ export default function Home() {
   };
 
   const startHarvest = async () => {
-    try {
-      const { request } = await walletClient.writeContract({
-        address: StakingContractAddress,
-        abi: contractABI,
-        functionName: "harvest",
-        args: [redeemNftAddress],
-        account: accountAddress,
-      });
-      return await request;
-    } catch (error) {
-      alert(`Transaction failed due to this error: ${error}`);
+    if (Number(userInfo[3]) == 0) {
+      alert("You haven't earned any Rewards yet to CLaim");
+    } else {
+
+      try {
+        const { request } = await walletClient.writeContract({
+          address: StakingContractAddress,
+          abi: contractABI,
+          functionName: "harvest",
+          args: [redeemNftAddress],
+          account: accountAddress,
+        });
+        return await request;
+      } catch (error) {
+        alert(`Transaction failed due to this error: ${error}`);
+      }
     }
   };
 

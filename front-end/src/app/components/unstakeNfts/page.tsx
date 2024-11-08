@@ -1,5 +1,5 @@
-"use client"
-import React, { useState } from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 
 // Define the NFT and collection types
@@ -20,26 +20,14 @@ type SelectedNFT = {
 };
 
 
-
-// Define the props for the component
-interface UnstakeNftCollectionsProps {
-  selectedUnStakeNfts: SelectedNFT[];
-  setSelectedUnStakeNfts: React.Dispatch<React.SetStateAction<SelectedNFT[]>>;
-  nftData: {
-    [key: number]: {
-      contractAddress: string;
-      tokenIds: number[];
-    };
-  };
-}
-
 const UnstakeNftCollections: React.FC<any> = ({
   nftData,
   selectedUnStakeNfts,
   setSelectedUnStakeNfts,
 }) => {
   const [collections, setCollections] = useState<NFTCollection[]>([]);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true); // Add loading state
 
   const nftABI = ["function tokenURI(uint256 tokenId) view returns (string)"];
 
@@ -61,8 +49,12 @@ const UnstakeNftCollections: React.FC<any> = ({
   };
 
   const fetchUnstakeNftCollections = async () => {
+    setLoading(true); // Start loading when fetching begins
     const signer = await connectWallet();
-    if (!signer) return;
+    if (!signer) {
+      setLoading(false); // Stop loading if wallet connection fails
+      return;
+    }
 
     const provider = signer.provider;
 
@@ -88,12 +80,10 @@ const UnstakeNftCollections: React.FC<any> = ({
             const metadata = await fetch(convertIpfsUrlToHttp(tokenURI)).then(
               (response) => response.json()
             );
-            console.log("this is the nft metadata: ", metadata)
             const imageUrl =
               convertIpfsUrlToHttp(metadata.image) ||
               convertIpfsUrlToHttp(metadata.image_url);
 
-              console.log("this is the imageURI: ", imageUrl);
             nfts.push({
               tokenId: tokenId.toString(),
               tokenURI,
@@ -128,23 +118,25 @@ const UnstakeNftCollections: React.FC<any> = ({
 
       return mergedCollections;
     });
+
+    setLoading(false); // Stop loading once fetching is complete
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchUnstakeNftCollections();
   }, [nftData]); // Depend on nftData to refetch when it changes
 
   const handleSelectNFT = (nft: SelectedNFT) => {
-    setSelectedUnStakeNfts((prevSelectedNfts: any) => {
+    setSelectedUnStakeNfts((prevSelectedNfts: SelectedNFT[]) => {
       const alreadySelected = prevSelectedNfts.find(
-        (selectedNft: any) =>
+        (selectedNft) =>
           selectedNft.tokenId === nft.tokenId &&
           selectedNft.contractAddress === nft.contractAddress
       );
 
       if (alreadySelected) {
         return prevSelectedNfts.filter(
-          (selectedNft:any) =>
+          (selectedNft) =>
             selectedNft.tokenId !== nft.tokenId ||
             selectedNft.contractAddress !== nft.contractAddress
         );
@@ -157,8 +149,10 @@ const UnstakeNftCollections: React.FC<any> = ({
   return (
     <div>
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {collections?.length > 0 ? (
-        collections?.map((collection) => (
+      {loading ? ( // Show loading message while fetching
+        <p className="text-gray-300">Loading NFTs...</p>
+      ) : collections.length > 0 ? (
+        collections.map((collection) => (
           <div key={collection.contractAddress} className="mb-8">
             <h3 className="text-xl font-bold mb-4 text-gray-200">
               Collection Address: {collection.contractAddress}

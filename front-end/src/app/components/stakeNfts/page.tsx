@@ -1,5 +1,5 @@
-"use client"
-import React, { useState } from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 
 // Define the NFT and collection types
@@ -20,29 +20,14 @@ type SelectedNFT = {
 };
 
 
-// Define the props for the component
-interface NFTCollectionsProps {
-  selectedNfts: SelectedNFT[];
-  setSelectedNfts: React.Dispatch<React.SetStateAction<SelectedNFT[]>>;
-  potentialNftAddresses: string[];
-  collections: NFTCollection[];
-  setCollections: React.Dispatch<React.SetStateAction<NFTCollection[]>>;
-}
-
 const NFTCollections: React.FC<any> = ({
   collections,
   setCollections,
-  potentialNftAddresses,
   selectedNfts,
   setSelectedNfts,
 }) => {
-  const [error, setError] = useState<any>(null);
-
-  const nftABI = [
-    "function balanceOf(address owner) view returns (uint256)",
-    "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)",
-    "function tokenURI(uint256 tokenId) view returns (string)",
-  ];
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false); // Loading state
 
   const connectWallet = async () => {
     try {
@@ -53,7 +38,7 @@ const NFTCollections: React.FC<any> = ({
         return signer;
       } else {
         setError("Please install MetaMask!");
-        alert("wallet not detected");
+        alert("Wallet not detected");
         return null;
       }
     } catch (err) {
@@ -62,90 +47,91 @@ const NFTCollections: React.FC<any> = ({
     }
   };
 
-  const fetchNFTCollections = async () => {
+  const fetchNFTCollectionsFromAlchemy = async () => {
+    setLoading(true); // Start loading
     const signer = await connectWallet();
-    if (!signer) return;
-
-    const userAddress = await signer.getAddress();
-    const provider = signer.provider;
-
-    const convertIpfsUrlToHttp = (url: string) => {
-      if (url.startsWith("ipfs://")) {
-        return url.replace("ipfs://", "https://ipfs.io/ipfs/");
-      }
-      return url;
-    };
-
-    const newCollections: NFTCollection[] = [];
-
-    for (let address of potentialNftAddresses) {
-      try {
-        const contract = new ethers.Contract(address, nftABI, provider);
-        const balance = await contract.balanceOf(userAddress);
-
-        if (balance > 0) {
-          const nfts: NFT[] = [];
-          for (let i = 0; i < balance; i++) {
-            const tokenId = await contract.tokenOfOwnerByIndex(userAddress, i);
-            const tokenURI = await contract.tokenURI(tokenId);
-
-            const metadata = await fetch(convertIpfsUrlToHttp(tokenURI)).then(
-              (response) => response.json()
-            );
-            const imageUrl =
-              convertIpfsUrlToHttp(metadata.image) ||
-              convertIpfsUrlToHttp(metadata.image_url);
-
-            nfts.push({
-              tokenId: tokenId.toString(),
-              tokenURI,
-              imageUrl,
-            });
-          }
-
-          newCollections.push({
-            contractAddress: address,
-            nfts,
-          });
-        }
-      } catch (err) {
-        console.error(`Error fetching NFTs from ${address}:`, err);
-      }
+    if (!signer) {
+      setLoading(false); // Stop loading if wallet connection fails
+      return;
     }
 
-    // Avoid duplicating collections
-    setCollections((prevCollections: any) => {
-      const mergedCollections = [...prevCollections];
+    const userAddress = await signer.getAddress();
 
-      newCollections.forEach((newCollection) => {
-        const existingCollection = mergedCollections.find(
-          (collection) => collection.contractAddress === newCollection.contractAddress
-        );
+    try {
+      // Fetch NFTs owned by the user from Alchemy API
+      const alchemyApiKey = "Vpv0tWV1M_lyb7531yHUsR_pEbmqedvp"; // Replace with your Alchemy API key
+      const url = `https://zksync-sepolia.g.alchemy.com/v2/${alchemyApiKey}/getNFTs/?owner=${userAddress}`;
 
-        if (!existingCollection) {
-          mergedCollections.push(newCollection);
-        }
-      });
+      const response = await fetch(url);
+      const data = await response.json();
 
-      return mergedCollections;
-    });
+      if (data?.ownedNfts?.length > 0) {
+        const newCollections: NFTCollection[] = [];
+
+        data.ownedNfts.forEach((nft: any) => {
+          const existingCollection = newCollections.find(
+            (collection) => collection.contractAddress === nft.contract.address
+          );
+
+          const nftData: NFT = {
+            tokenId: nft.id.tokenId,
+            tokenURI: nft.tokenUri.raw,
+            imageUrl: nft.media[0]?.gateway || "", // Use the direct image URL
+          };
+
+          if (existingCollection) {
+            existingCollection.nfts.push(nftData);
+          } else {
+            newCollections.push({
+              contractAddress: nft.contract.address,
+              nfts: [nftData],
+            });
+          }
+        });
+
+        // Avoid duplicating collections
+        setCollections((prevCollections: NFTCollection[]) => {
+          const mergedCollections = [...prevCollections];
+
+          newCollections.forEach((newCollection) => {
+            const existingCollection = mergedCollections.find(
+              (collection) =>
+                collection.contractAddress === newCollection.contractAddress
+            );
+
+            if (!existingCollection) {
+              mergedCollections.push(newCollection);
+            }
+          });
+
+          return mergedCollections;
+        });
+      } else {
+        setError("No NFTs found for this address.");
+      }
+    } catch (error) {
+      setError("Failed to fetch NFTs from Alchemy.");
+      console.error("Error fetching NFTs from Alchemy:", error);
+    }
+
+    setLoading(false); // Stop loading once fetching is complete
   };
 
-  React.useEffect(() => {
-    fetchNFTCollections();
+  useEffect(() => {
+    fetchNFTCollectionsFromAlchemy(); // Fetch NFTs on mount
   }, []); // Empty dependency array ensures this runs only once when the component mounts
 
   const handleSelectNFT = (nft: SelectedNFT) => {
-    setSelectedNfts((prevSelectedNfts: any) => {
+    setSelectedNfts((prevSelectedNfts: SelectedNFT[]) => {
       const alreadySelected = prevSelectedNfts.find(
-        (selectedNft: any) =>
+        (selectedNft) =>
           selectedNft.tokenId === nft.tokenId &&
           selectedNft.contractAddress === nft.contractAddress
       );
 
       if (alreadySelected) {
         return prevSelectedNfts.filter(
-          (selectedNft: any) =>
+          (selectedNft) =>
             selectedNft.tokenId !== nft.tokenId ||
             selectedNft.contractAddress !== nft.contractAddress
         );
@@ -158,7 +144,9 @@ const NFTCollections: React.FC<any> = ({
   return (
     <div>
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {collections?.length > 0 ? (
+      {loading ? ( // Check if loading is true
+        <p className="text-gray-300">Loading NFTs...</p>
+      ) : collections?.length > 0 ? (
         collections.map((collection: any) => (
           <div key={collection.contractAddress} className="mb-8">
             <h3 className="text-xl font-bold mb-4 text-gray-200">
@@ -176,9 +164,10 @@ const NFTCollections: React.FC<any> = ({
                   }
                   className={`border rounded-lg p-2 transition-transform transform hover:scale-105 ${
                     selectedNfts.find(
-                      (selectedNft : any) =>
+                      (selectedNft: any) =>
                         selectedNft.tokenId === nft.tokenId &&
-                        selectedNft.contractAddress === collection.contractAddress
+                        selectedNft.contractAddress ===
+                          collection.contractAddress
                     )
                       ? "border-blue-500"
                       : "border-gray-700"
