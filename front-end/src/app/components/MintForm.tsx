@@ -1,14 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import {
+  useAccount,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useConfig,
+} from "wagmi";
 import { parseEther } from "viem";
 import { contractABI as membershipNFTAbi } from "../../../abi"; // Ensure correct path
 import { marketplaceAbi } from "../../../marketplaceabi"; // Ensure correct path
+import { getPublicClient } from "wagmi/actions";
 
 // Replace with your actual contract addresses
-const MEMBERSHIP_CONTRACT_ADDRESS = "0x21132b6e3271BCfA36C5fA650f7A4F161bFa9f95";
-const MARKETPLACE_CONTRACT_ADDRESS = "0x712227dc4c784e5e0a1ec7afad7baa1dc01b9cb4";
+const MEMBERSHIP_CONTRACT_ADDRESS =
+  "0x21132b6e3271BCfA36C5fA650f7A4F161bFa9f95";
+const MARKETPLACE_CONTRACT_ADDRESS =
+  "0x712227dc4c784e5e0a1ec7afad7baa1dc01b9cb4";
 
 export default function MintForm() {
   // State management
@@ -21,6 +29,8 @@ export default function MintForm() {
   const [error, setError] = useState<string | null>(null);
 
   // Wagmi hooks
+  const config = useConfig();
+  const PublicClient: any = getPublicClient(config);
   const { address, isConnected } = useAccount();
   const { writeContract, isPending: isWritePending } = useWriteContract();
   const { isSuccess: isMintSuccess } = useWaitForTransactionReceipt({
@@ -49,13 +59,13 @@ export default function MintForm() {
         abi: membershipNFTAbi,
         address: MEMBERSHIP_CONTRACT_ADDRESS,
         functionName: "mint",
-        args: [address!, metadataURI, BigInt(tier!)], 
+        args: [address!, metadataURI, BigInt(tier!)],
       });
 
       // Wait for transaction and extract token ID
-      const receipt = await waitForTransactionReceipt({ hash });
+      const receipt = await PublicClient.waitForTransactionReceipt({ hash });
       const tokenIdFromLogs = extractTokenIdFromLogs(receipt.logs);
-      
+
       if (tokenIdFromLogs !== null) {
         setTokenId(tokenIdFromLogs);
       }
@@ -84,9 +94,9 @@ export default function MintForm() {
         address: MARKETPLACE_CONTRACT_ADDRESS,
         functionName: "listNFT",
         args: [
-          MEMBERSHIP_CONTRACT_ADDRESS, 
-          tokenId, 
-          parseEther("0.1") // Example listing price
+          MEMBERSHIP_CONTRACT_ADDRESS,
+          tokenId,
+          parseEther("0.1"), // Example listing price
         ],
       });
 
@@ -119,9 +129,7 @@ export default function MintForm() {
           </h2>
 
           {error && (
-            <div className="mb-4 text-red-500 text-center">
-              {error}
-            </div>
+            <div className="mb-4 text-red-500 text-center">{error}</div>
           )}
 
           {!tokenId && (
@@ -164,7 +172,9 @@ export default function MintForm() {
                 disabled={isMinting || isWritePending}
               >
                 <span className="relative z-10">
-                  {isMinting || isWritePending ? "Minting..." : "Mint Membership"}
+                  {isMinting || isWritePending
+                    ? "Minting..."
+                    : "Mint Membership"}
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </button>
@@ -186,7 +196,8 @@ export default function MintForm() {
 
           {tokenId && (
             <p className="mt-4 text-center text-green-400">
-              Token ID: {tokenId.toString()} minted successfully! Ready for listing.
+              Token ID: {tokenId.toString()} minted successfully! Ready for
+              listing.
             </p>
           )}
         </div>
