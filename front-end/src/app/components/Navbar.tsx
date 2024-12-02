@@ -1,38 +1,56 @@
-// components/Navbar.tsx
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import React from "react";
+'use client'
 
-const Navbar: React.FC = () => {
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+
+
+export default function Navbar() {
+  const [activeLink, setActiveLink] = useState('home')
+
+  const links = [
+    { name: 'Home', href: '#' },
+    { name: 'Marketplace', href: '/marketplace' },
+    { name: 'List Memberships', href: '/mint' },
+    { name: 'How It Works', href: '#' },
+    { name: 'Contact', href: '#' },
+  ]
+
   return (
-    <nav className="bg-[#d9d9d9] w-screen bg-opacity-[3%] fixed text-white shadow-lg z-20 backdrop-blur">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-50 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <h1 className=" font-itim text-[25px]">INKWORLD</h1>
+            <a href="#" className="text-xl font-bold text-white">
+              MetaPass
+            </a>
+          </div>
+          <div className="hidden md:block">
+            <div className="ml-10 flex items-baseline space-x-4">
+              {links.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className="relative px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                  onClick={() => setActiveLink(link.name.toLowerCase())}
+                >
+                  {link.name}
+                  {activeLink === link.name.toLowerCase() && (
+                    <motion.div
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                      layoutId="underline"
+                    />
+                  )}
+                </a>
+              ))}
             </div>
           </div>
-          <div className="hidden md:flex md:items-center">
-            <a
-              href="#"
-              className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Stake NFTs
-            </a>
-            <a
-              href="#"
-              className="ml-4 text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Stake Tokens
-            </a>
-          </div>
-          <div className="flex items-center">
+          <div className="flex-shrink-0">
             <ConnectButton />
           </div>
         </div>
       </div>
     </nav>
-  );
-};
+  )
+}
 
-export default Navbar;

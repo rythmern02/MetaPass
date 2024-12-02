@@ -1,37 +1,26 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "./components/Navbar";
+import { Inter } from "next/font/google";
+import { CustomCursor } from "./components/CustomCursor";
 import { Providers } from "./components/providers";
-import { ethers } from "ethers";
 
 const inter = Inter({ subsets: ["latin"] });
 
-
-export const metadata: Metadata = {
-  title: "InkWorld",
-  description: "inkworld the nft collection",
+export const metadata = {
+  title: "MetaPass - The Magic of Tradable Memberships",
+  description: "Unleash the Future of Access with Blockchain",
 };
-
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  
-  
-  // const client =  createPublicClient({
-  //   chain: zksyncSepoliaTestnet,
-  //   transport: http("https://zksync-sepolia.g.alchemy.com/v2/Vpv0tWV1M_lyb7531yHUsR_pEbmqedvp"),
-  // });
-  
+}) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Providers >
-          <Navbar />
+        <Providers>
           {children}
+          <CustomCursor />
         </Providers>
       </body>
     </html>
