@@ -5,12 +5,12 @@ import { motion } from 'framer-motion'
 import NFTCard from './NFTCard'
 
 const mockNFTs = [
-  { id: 1, name: 'Mystic Scroll', price: '0.5 ETH', image: '/images/nft-1.jpg' },
-  { id: 2, name: 'Enchanted Key', price: '0.7 ETH', image: '/images/nft-2.jpg' },
-  { id: 3, name: 'Wizard\'s Hat', price: '1.2 ETH', image: '/images/nft-3.jpg' },
-  { id: 4, name: 'Dragon Scale', price: '2.0 ETH', image: '/images/nft-4.jpg' },
-  { id: 5, name: 'Phoenix Feather', price: '1.5 ETH', image: '/images/nft-5.jpg' },
-  { id: 6, name: 'Crystal Ball', price: '0.8 ETH', image: '/images/nft-6.jpg' },
+  { id: 1, name: 'Mystic Scroll', price: '0.5 ETH', image: '/venom-boy.png' },
+  { id: 2, name: 'NetFlix', price: '0.7 ETH', image: '/green-boy.png' },
+  { id: 3, name: 'Wizard\'s Hat', price: '1.2 ETH', image: '/venom-boy.png' },
+  { id: 4, name: 'Dragon Scale', price: '2.0 ETH', image: '/green-boy.png' },
+  { id: 5, name: 'Phoenix Feather', price: '1.5 ETH', image: '/venom-boy.png' },
+  { id: 6, name: 'Prime', price: '0.8 ETH', image: '/green-boy.png' },
 ]
 
 export default function MarketplaceGrid() {
