@@ -64,8 +64,7 @@ MetaPass is built on **Base Blockchain**, unlocking unmatched advantages:
 
 - **Blockchain:** Solidity, Hardhat, OpenZeppelin, Base Blockchain  
 - **Frontend:** Next.js, TypeScript, Tailwind CSS, Framer Motion  
-- **Wallet Integration:** RainbowKit, wagmi  
-- **Data Indexing:** The Graph Protocol  
+- **Wallet Integration:** RainbowKit, wagmi   
 - **Storage:** IPFS, Pinata  
 - **APIs & Backend:** Node.js, Alchemy  
 - **Authentication:** Firebase  
